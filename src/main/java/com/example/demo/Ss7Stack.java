@@ -199,17 +199,6 @@ public class Ss7Stack {
         LOGGER.info("Ss7Stack start done");
 
 
-        sctpManagement.getAssociations().forEach( (name, ass) -> {
-			try {
-                LOGGER.info("Starting Association {}" + name);
-                sctpManagement.startAssociation(name);
-                LOGGER.info("Started Association {}" + name);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		});
-
         /* ------------
         String CLIENT_IP = "localhost";
         int CLIENT_PORT = 8080;
