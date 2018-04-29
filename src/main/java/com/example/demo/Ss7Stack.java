@@ -81,8 +81,6 @@ public class Ss7Stack {
     public void init() {
         LOGGER.info("Init Ss7Stack");
 
-        int DELIVERY_TRANSFER_MESSAGE_THREAD_COUNT = 5;
-
         try {
 			initM3ua("10.0.0.6", 2064, "192.168.212.7", 2064, "10.0.0.6", 2066, "192.168.213.7", 2066, IpChannelType.SCTP, null, persistFolder, 2, RoutingLabelFormat.ITU);
 		} catch (Exception e) {
@@ -90,7 +88,8 @@ public class Ss7Stack {
 			e.printStackTrace();
 		}
 
-		sccpStack = new SccpStackImpl("SccpStack");
+/*
+        sccpStack = new SccpStackImpl("SccpStack");
 		sccpStack.setPersistDir(persistFolder);
 		sccpStack.setMtp3UserPart(1, m3uaMgmt);
 
@@ -104,6 +103,7 @@ public class Ss7Stack {
         mapProvider.getMAPServiceSupplementary().addMAPServiceListener(new MapSupplementaryHandler());
         mapProvider.getMAPServiceSms().addMAPServiceListener(new MapSMSHandler());
         mapProvider.getMAPServiceSupplementary().acivate();
+     */
         LOGGER.info("Init Ss7Stack done");
     }
 
@@ -331,7 +331,7 @@ public class Ss7Stack {
         // init SCTP stack
         this.sctpManagement = new NettySctpManagementImpl("SimSCTPServer_" + name);
         // set 8 threads for delivering messages
-        this.sctpManagement.setPersistDir(persistDir);
+     //   this.sctpManagement.setPersistDir(persistDir);
         this.sctpManagement.setWorkerThreads(8);
         this.sctpManagement.setSingleThread(false);
 
@@ -342,7 +342,7 @@ public class Ss7Stack {
 
         // init M3UA stack+
         this.m3uaMgmt = new M3UAManagementImpl("SimM3uaServer_" + name, "pname");
-        this.m3uaMgmt.setPersistDir(persistDir);
+    //    this.m3uaMgmt.setPersistDir(persistDir);
         this.m3uaMgmt.setTransportManagement(this.sctpManagement);
         this.m3uaMgmt.setRoutingLabelFormat(routingLabelFormat);
 
