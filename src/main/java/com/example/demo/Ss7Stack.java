@@ -4,13 +4,26 @@ import java.io.IOException;
 
 import javax.annotation.PostConstruct;
 
+import org.mobicents.protocols.api.Association;
+import org.mobicents.protocols.api.IpChannelType;
 import org.mobicents.protocols.api.Management;
+import org.mobicents.protocols.sctp.netty.NettySctpManagementImpl;
 import org.mobicents.protocols.ss7.indicator.NatureOfAddress;
 import org.mobicents.protocols.ss7.indicator.RoutingIndicator;
+import org.mobicents.protocols.ss7.m3ua.As;
+import org.mobicents.protocols.ss7.m3ua.Asp;
+import org.mobicents.protocols.ss7.m3ua.AspFactory;
+import org.mobicents.protocols.ss7.m3ua.ExchangeType;
+import org.mobicents.protocols.ss7.m3ua.Functionality;
+import org.mobicents.protocols.ss7.m3ua.IPSPType;
 import org.mobicents.protocols.ss7.m3ua.impl.AsImpl;
 import org.mobicents.protocols.ss7.m3ua.impl.AspImpl;
 import org.mobicents.protocols.ss7.m3ua.impl.M3UAManagementImpl;
 import org.mobicents.protocols.ss7.m3ua.impl.fsm.FSM;
+import org.mobicents.protocols.ss7.m3ua.impl.parameter.ParameterFactoryImpl;
+import org.mobicents.protocols.ss7.m3ua.parameter.NetworkAppearance;
+import org.mobicents.protocols.ss7.m3ua.parameter.RoutingContext;
+import org.mobicents.protocols.ss7.m3ua.parameter.TrafficModeType;
 import org.mobicents.protocols.ss7.map.MAPStackImpl;
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContext;
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContextName;
@@ -23,6 +36,7 @@ import org.mobicents.protocols.ss7.map.api.primitives.AddressString;
 import org.mobicents.protocols.ss7.map.api.primitives.ISDNAddressString;
 import org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan;
 import org.mobicents.protocols.ss7.map.api.service.sms.MAPDialogSms;
+import org.mobicents.protocols.ss7.mtp.RoutingLabelFormat;
 import org.mobicents.protocols.ss7.sccp.impl.SccpStackImpl;
 import org.mobicents.protocols.ss7.sccp.parameter.GlobalTitle;
 import org.mobicents.protocols.ss7.sccp.parameter.ParameterFactory;
@@ -42,7 +56,20 @@ public class Ss7Stack {
 
 	public Management sctpManagement;
 
-	public M3UAManagementImpl clientM3UAManagement;
+    public M3UAManagementImpl m3uaMgmt;
+
+    private ParameterFactoryImpl factory = new ParameterFactoryImpl();
+
+    public Association assoc;
+    public Association assoc2;
+    private As localAs;
+    private As localAs2;
+    private AspFactory localAspFactory;
+    private AspFactory localAspFactory2;
+    private Asp localAsp;
+    private Asp localAsp2;
+
+
 
 	public SccpStackImpl sccpStack;
 
@@ -53,21 +80,11 @@ public class Ss7Stack {
     @PostConstruct
     public void init() {
         LOGGER.info("Init Ss7Stack");
-        try {
-            sctpManagement = new org.mobicents.protocols.sctp.netty.NettySctpManagementImpl("Client");
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        sctpManagement.setPersistDir(persistFolder);
 
         int DELIVERY_TRANSFER_MESSAGE_THREAD_COUNT = 5;
 
-		clientM3UAManagement = new M3UAManagementImpl("M3UA_Client", null);
-		clientM3UAManagement.setPersistDir(persistFolder);
-		clientM3UAManagement.setTransportManagement(sctpManagement);
-		try {
-			clientM3UAManagement.setDeliveryMessageThreadCount(DELIVERY_TRANSFER_MESSAGE_THREAD_COUNT);
+        try {
+			initM3ua("10.0.0.6", 2064, "192.168.212.7", 2064, "10.0.0.6", 2066, "192.168.213.7", 2066, IpChannelType.SCTP, null, persistFolder, 2, RoutingLabelFormat.ITU);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -75,7 +92,7 @@ public class Ss7Stack {
 
 		sccpStack = new SccpStackImpl("SccpStack");
 		sccpStack.setPersistDir(persistFolder);
-		sccpStack.setMtp3UserPart(1, clientM3UAManagement);
+		sccpStack.setMtp3UserPart(1, m3uaMgmt);
 
         int SSN = 0;
 		tcapStack = new TCAPStackImpl("TCAP", sccpStack.getSccpProvider(), SSN);
@@ -104,7 +121,7 @@ public class Ss7Stack {
             } );
         sb.append("  M3UA:");
 
-        clientM3UAManagement.getAppServers().forEach(
+        m3uaMgmt.getAppServers().forEach(
             as -> {
                 sb.append(" AS: ");
                 sb.append(as.getName());
@@ -145,7 +162,7 @@ public class Ss7Stack {
     public void aspStart() {
         LOGGER.info("Ss7Stack aspStart");
 
-        clientM3UAManagement.getAppServers().forEach(
+        m3uaMgmt.getAppServers().forEach(
             as -> {
                 as.getAspList().forEach(
                     asp -> {
@@ -153,7 +170,7 @@ public class Ss7Stack {
                         LOGGER.info("Ss7Stack starting ASP: {}", name);
 
                         try {
-							clientM3UAManagement.startAsp(name);
+							m3uaMgmt.startAsp(name);
 						} catch (Exception e) {
                             LOGGER.info("Error starting Asp: {}", name);
 							// TODO Auto-generated catch block
@@ -174,7 +191,7 @@ public class Ss7Stack {
         tcapStack.stop();
         sccpStack.stop();
         try {
-			clientM3UAManagement.stop();
+			m3uaMgmt.stop();
             sctpManagement.stop();
         } catch (Exception e) {
             // TODO Auto-generated catch block
@@ -188,7 +205,7 @@ public class Ss7Stack {
         try {
 			sctpManagement.start();
             sctpManagement.setConnectDelay(10000);
-            clientM3UAManagement.start();
+            m3uaMgmt.start();
             sccpStack.start();
             tcapStack.start();
             mapStack.start();
@@ -303,6 +320,118 @@ public class Ss7Stack {
         */
     }
 
+    private void initM3ua(String localHost, int localPort, String remoteHost, int remotePort, String localHost2,
+            int localPort2, String remoteHost2, int remotePort2, IpChannelType ipChannelType, String[] extraHostAddresses, String persistDir,
+            int trafficModeTypeInt, RoutingLabelFormat routingLabelFormat) throws Exception {
+
+        this.stopM3ua();
+
+        String name = "main";
+
+        // init SCTP stack
+        this.sctpManagement = new NettySctpManagementImpl("SimSCTPServer_" + name);
+        // set 8 threads for delivering messages
+        this.sctpManagement.setPersistDir(persistDir);
+        this.sctpManagement.setWorkerThreads(8);
+        this.sctpManagement.setSingleThread(false);
+
+        this.sctpManagement.start();
+        this.sctpManagement.setConnectDelay(10000);
+        this.sctpManagement.removeAllResourses();
+        Thread.sleep(500); // waiting for freeing ip ports
+
+        // init M3UA stack+
+        this.m3uaMgmt = new M3UAManagementImpl("SimM3uaServer_" + name, "pname");
+        this.m3uaMgmt.setPersistDir(persistDir);
+        this.m3uaMgmt.setTransportManagement(this.sctpManagement);
+        this.m3uaMgmt.setRoutingLabelFormat(routingLabelFormat);
+
+        this.m3uaMgmt.start();
+        this.m3uaMgmt.removeAllResourses();
+
+        // configure SCTP stack
+        String SERVER_NAME = "Server_" + name;
+        String SERVER_NAME_2 = "Server_" + name + "_2";
+        String SERVER_ASSOCIATION_NAME = "ServerAss_" + name;
+        String SERVER_ASSOCIATION_NAME_2 = "ServerAss_" + name + "_2";
+        String ASSOCIATION_NAME = "Ass_" + name;
+        String ASSOCIATION_NAME_2 = "Ass_" + name + "_2";
+        String assName;
+        String assName2 = null;
+
+        // String localHost2, int localPort2, String remoteHost2, int remotePort2
+
+        // 1. Create SCTP Server
+        sctpManagement.addServer(SERVER_NAME, localHost, localPort, ipChannelType, extraHostAddresses);
+
+        // 2. Create SCTP Server Association
+        sctpManagement.addServerAssociation(remoteHost, remotePort, SERVER_NAME, SERVER_ASSOCIATION_NAME, ipChannelType);
+        this.assoc = sctpManagement.getAssociation(SERVER_ASSOCIATION_NAME);
+        assName = SERVER_ASSOCIATION_NAME;
+
+        // 3. Start Server
+        sctpManagement.startServer(SERVER_NAME);
+
+        if (localHost2 != null && !localHost2.equals("") && remoteHost2 != null && !remoteHost2.equals("")) {
+            // a second link is defined
+
+            // 1. Create SCTP Server
+            sctpManagement.addServer(SERVER_NAME_2, localHost2, localPort2, ipChannelType, null);
+
+            // 2. Create SCTP Server Association
+            sctpManagement.addServerAssociation(remoteHost2, remotePort2, SERVER_NAME_2, SERVER_ASSOCIATION_NAME_2, ipChannelType);
+            this.assoc2 = sctpManagement.getAssociation(SERVER_ASSOCIATION_NAME_2);
+            assName2 = SERVER_ASSOCIATION_NAME_2;
+
+            // 3. Start Server
+            sctpManagement.startServer(SERVER_NAME_2);
+        }
+
+        // configure M3UA stack
+        // 1. Create AS
+        RoutingContext rc = factory.createRoutingContext(new long[] { 0 });
+        TrafficModeType trafficModeType = factory.createTrafficModeType(trafficModeTypeInt);
+        NetworkAppearance na = null;
+
+        localAs = m3uaMgmt.createAs("testas", Functionality.AS, ExchangeType.SE, IPSPType.CLIENT, rc, trafficModeType, 1, na);
+        // 2. Create ASP
+        localAspFactory = m3uaMgmt.createAspFactory("testasp", assName);
+        // 3. Assign ASP to AS
+        localAsp = m3uaMgmt.assignAspToAs("testas", "testasp");
+
+        // 4. Define Route
+        // Define Route
+        m3uaMgmt.addRoute(3600, 3232, -1, "testas");
+
+        // 2. Start ASP
+        m3uaMgmt.startAsp("testasp");
+
+        // 1. Create AS
+        localAs2 = m3uaMgmt.createAs("testas2", Functionality.AS, ExchangeType.SE, IPSPType.CLIENT, rc, trafficModeType, 1, na);
+        // 2. Create ASP
+        localAspFactory = m3uaMgmt.createAspFactory("testasp2", assName2);
+        // 3. Assign ASP to AS
+        localAsp = m3uaMgmt.assignAspToAs("testas2", "testasp2");
+
+        // 4. Define Route
+        // Define Route
+        m3uaMgmt.addRoute(3700, 3232, -1, "testas2");
+
+        // 2. Start ASP
+        m3uaMgmt.startAsp("testasp2");
+
+    }
+
+    private void stopM3ua() throws Exception {
+        if (this.m3uaMgmt != null) {
+            this.m3uaMgmt.stop();
+            this.m3uaMgmt = null;
+        }
+        if (this.sctpManagement != null) {
+            this.sctpManagement.stop();
+            this.sctpManagement = null;
+        }
+    }
 
 
 
