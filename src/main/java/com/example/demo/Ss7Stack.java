@@ -36,7 +36,11 @@ import org.restcomm.protocols.ss7.map.api.primitives.AddressString;
 import org.restcomm.protocols.ss7.map.api.primitives.ISDNAddressString;
 import org.restcomm.protocols.ss7.map.api.primitives.NumberingPlan;
 import org.restcomm.protocols.ss7.map.api.service.sms.MAPDialogSms;
+import org.restcomm.protocols.ss7.mtp.Mtp3UserPart;
 import org.restcomm.protocols.ss7.mtp.RoutingLabelFormat;
+import org.restcomm.protocols.ss7.sccp.SccpProtocolVersion;
+import org.restcomm.protocols.ss7.sccp.SccpProvider;
+import org.restcomm.protocols.ss7.sccp.SccpResource;
 import org.restcomm.protocols.ss7.sccp.impl.SccpStackImpl;
 import org.restcomm.protocols.ss7.sccp.parameter.GlobalTitle;
 import org.restcomm.protocols.ss7.sccp.parameter.ParameterFactory;
@@ -59,6 +63,7 @@ public class Ss7Stack {
     public M3UAManagementImpl m3uaMgmt;
 
     private ParameterFactoryImpl factory = new ParameterFactoryImpl();
+    private ParameterFactory parameterFactory;
 
     public Association assoc;
     public Association assoc2;
@@ -69,20 +74,38 @@ public class Ss7Stack {
     private Asp localAsp;
     private Asp localAsp2;
 
-
-
     public SccpStackImpl sccpStack;
-
     public TCAPStackImpl tcapStack;
-
     public MAPStackImpl mapStack;
+
+    private SccpProvider sccpProvider;
+
+    private SccpResource resource;
+
+    private int localSsn;
+
+    private String callingPartyAddress;
+
+    private int remoteSsn;
+
+    private int dpc;
 
     @PostConstruct
     public void init() {
         LOGGER.info("Init Ss7Stack");
 
+        int remoteSsn = 6;
+        int localSsn = 5;
+        int remoteSpc = 3600;
+        int remoteSpc2 = 3700;
+        int localSpc = 3232;
+        int ni = 2;
+        String callingPartyAddress = "93791010507";
+        SccpProtocolVersion protocolVersion = SccpProtocolVersion.ITU;
+
         try {
             initM3ua("10.0.0.6", 2064, "192.168.212.7", 2064, "10.0.0.6", 2066, "192.168.213.7", 2066, IpChannelType.SCTP, null, persistFolder, 2, RoutingLabelFormat.ITU);
+            initSccp(m3uaMgmt, remoteSsn, localSsn, remoteSpc, remoteSpc2, localSpc, ni, callingPartyAddress, persistFolder, protocolVersion);
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -433,5 +456,70 @@ public class Ss7Stack {
                                         NatureOfAddress.INTERNATIONAL);
         return parameterFactory.createSccpAddress(RoutingIndicator.ROUTING_BASED_ON_GLOBAL_TITLE, gt, 0, SSN);
     }
+
+
+    private void initSccp(Mtp3UserPart mtp3UserPart, int remoteSsn, int localSsn, int dpc, int dpc2, int opc, int ni,
+            String callingPartyAddressDigits, String persistDir, SccpProtocolVersion sccpProtocolVersion) throws Exception {
+
+        this.localSsn = localSsn;
+        this.callingPartyAddress = callingPartyAddressDigits;
+        this.remoteSsn = remoteSsn;
+        this.dpc = dpc;
+
+        this.sccpStack = new SccpStackImpl("TestingSccp");
+
+        this.sccpStack.setPersistDir(persistDir);
+
+        this.sccpStack.setMtp3UserPart(1, mtp3UserPart);
+        this.sccpStack.start();
+        this.sccpStack.removeAllResourses();
+
+        this.sccpStack.setSccpProtocolVersion(sccpProtocolVersion);
+        this.sccpStack.getRouter().addMtp3ServiceAccessPoint(1, 1, opc, ni, 0, null);
+        this.sccpStack.getRouter().addMtp3Destination(1, 1, dpc, dpc, 0, 255, 255);
+        if (dpc2 > 0)
+            this.sccpStack.getRouter().addMtp3Destination(1, 2, dpc2, dpc2, 0, 255, 255);
+
+        this.sccpProvider = this.sccpStack.getSccpProvider();
+        this.parameterFactory = this.sccpProvider.getParameterFactory();
+        // router1 = sccpStack1.getRouter();
+
+        this.resource = this.sccpStack.getSccpResource();
+
+        this.resource.addRemoteSpc(1, dpc, 0, 0);
+        this.resource.addRemoteSsn(1, dpc, remoteSsn, 0, false);
+        if (dpc2 > 0) {
+            this.resource.addRemoteSpc(2, dpc2, 0, 0);
+            this.resource.addRemoteSsn(2, dpc2, remoteSsn, 0, false);
+        }
+
+        // sccpConfigExt(opc, dpc, dpc2, localSsn);
+    }
+
+    private void stopSccp() {
+
+        this.sccpStack.removeAllResourses();
+        this.sccpStack.stop();
+    }
+
+    public SccpAddress createCallingPartyAddress() {
+        return parameterFactory.createSccpAddress(RoutingIndicator.ROUTING_BASED_ON_GLOBAL_TITLE, createGlobalTitle(callingPartyAddress), 0, localSsn);
+    }
+
+    public SccpAddress createCalledPartyAddress(int remoteSpc, int remoteSsn) {
+        return parameterFactory.createSccpAddress(RoutingIndicator.ROUTING_BASED_ON_DPC_AND_SSN, null, remoteSpc, remoteSsn);
+    }
+
+    public SccpAddress createCalledPartyAddress(String address, int ssn) {
+        return parameterFactory.createSccpAddress(RoutingIndicator.ROUTING_BASED_ON_GLOBAL_TITLE, createGlobalTitle(address), 0, (ssn >= 0 ? ssn : this.remoteSsn));
+    }
+
+    public GlobalTitle createGlobalTitle(String address) {
+        GlobalTitle gt = this.parameterFactory.createGlobalTitle(address, 0, org.restcomm.protocols.ss7.indicator.NumberingPlan.ISDN_TELEPHONY, null, NatureOfAddress.INTERNATIONAL);
+       return gt;
+    }
+
+
+
 
 }

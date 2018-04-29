@@ -73,7 +73,6 @@ public class MapSupplementaryHandler implements MAPServiceSupplementaryListener 
         public void onEraseSSRequest(EraseSSRequest request) {
         String methodName = new Object().getClass().getEnclosingMethod().getName();
         LOGGER.info("{}: {}", methodName, request);
-
         }
 
         @Override
