@@ -427,7 +427,7 @@ public class Ss7Stack {
         AddressString serviceCentreAddress = paramFactory.createAddressString(AddressNature.international_number, NumberingPlan.ISDN, serviceCentreAddr);
 
         try {
-            SccpAddress origAddress = sccpStack.getRouter().getRoutingAddress(1);
+            org.restcomm.protocols.ss7.sccp.parameter.SccpAddress origAddress = sccpStack.getRouter().getRoutingAddress(1);
             SccpAddress destAddress = createSccpAddress(destIsdnNumber, 6);
             MAPDialogSms curDialog = mapProvider.getMAPServiceSms().createNewDialog(mapAppContext,
                 origAddress, null,
