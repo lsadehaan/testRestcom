@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<heartbeattime value="10000"/>
+<useLsbForLinksetSelection value="false"/>
+<aspFactoryList>
+	<aspFactory name="testasp" assocName="Ass_main" started="true" maxseqnumber="256" aspid="2" heartbeat="false"/>
+	<aspFactory name="testasp2" assocName="Ass_main_2" started="true" maxseqnumber="256" aspid="3" heartbeat="false"/>
+</aspFactoryList>
+<asList>
+	<as name="testas" minAspActiveForLb="1" functionality="AS" exchangeType="SE" ipspType="CLIENT">
+		<routingContext size="1">
+			<rc value="0"/>
+		</routingContext>
+		<trafficMode mode="2"/>
+		<defTrafficMode mode="2"/>
+		<asps>
+			<asp name="testasp"/>
+		</asps>
+	</as>
+	<as name="testas2" minAspActiveForLb="1" functionality="AS" exchangeType="SE" ipspType="CLIENT">
+		<routingContext size="1">
+			<rc value="0"/>
+		</routingContext>
+		<trafficMode mode="2"/>
+		<defTrafficMode mode="2"/>
+		<asps>
+			<asp name="testasp2"/>
+		</asps>
+	</as>
+</asList>
+<route>
+	<key value="3600:3232:-1"/>
+	<routeAs trafficModeType="2" as="testas"/>
+	<key value="3700:3232:-1"/>
+	<routeAs trafficModeType="2" as="testas2"/>
+</route>

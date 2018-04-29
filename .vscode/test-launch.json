@@ -1,0 +1,22 @@
+{
+    "run": [
+        {
+            "name": "demo",
+            "projectName": "demo",
+            "workingDirectory": "c:\\_CODE_\\GitHub\\Test\\testRestcom",
+            "args": [],
+            "vmargs": [],
+            "preLaunchTask": ""
+        }
+    ],
+    "debug": [
+        {
+            "name": "demo",
+            "projectName": "demo",
+            "workingDirectory": "c:\\_CODE_\\GitHub\\Test\\testRestcom",
+            "args": [],
+            "vmargs": [],
+            "preLaunchTask": ""
+        }
+    ]
+}

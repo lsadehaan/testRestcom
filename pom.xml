@@ -5,18 +5,29 @@
 
 	<groupId>com.example</groupId>
 	<artifactId>demo</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>8.0.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>demo</name>
 	<description>Demo project for Spring Boot</description>
 
 	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.0.1.RELEASE</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<artifactId>tools</artifactId>
+		<groupId>org.restcomm.protocols.ss7</groupId>
+		<version>8.0.0-SNAPSHOT</version>
 	</parent>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-dependencies</artifactId>
+				<version>2.0.1.RELEASE</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -36,12 +47,105 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- https://mvnrepository.com/artifact/org.mobicents.protocols.ss7/restcomm-ss7 -->
 		<dependency>
-			<groupId>org.mobicents.protocols.ss7</groupId>
-			<artifactId>restcomm-ss7</artifactId>
-			<version>8.0.112</version>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>javolution</groupId>
+			<artifactId>javolution</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.protocols.asn</groupId>
+			<artifactId>asn</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.restcomm.protocols.ss7.statistics</groupId>
+			<artifactId>statistics-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.restcomm.protocols.ss7.statistics</groupId>
+			<artifactId>statistics-impl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.restcomm.protocols.ss7.sccp</groupId>
+			<artifactId>sccp-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.restcomm.protocols.ss7.sccp</groupId>
+			<artifactId>sccp-impl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.restcomm.protocols.ss7.tcap</groupId>
+			<artifactId>tcap-impl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.restcomm.protocols.ss7.tcap</groupId>
+			<artifactId>tcap-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.restcomm.protocols.ss7.map</groupId>
+			<artifactId>map-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.restcomm.protocols.ss7.map</groupId>
+			<artifactId>map-impl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.restcomm.protocols.ss7.cap</groupId>
+			<artifactId>cap-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.restcomm.protocols.ss7.cap</groupId>
+			<artifactId>cap-impl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.restcomm.protocols.ss7.isup</groupId>
+			<artifactId>isup-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.restcomm.protocols.ss7.isup</groupId>
+			<artifactId>isup-impl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.restcomm.protocols.ss7.inap</groupId>
+			<artifactId>inap-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.restcomm.protocols.ss7.inap</groupId>
+			<artifactId>inap-impl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.sun.jdmk</groupId>
+			<artifactId>jmxtools</artifactId>
+			<version>1.2.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.protocols.sctp</groupId>
+			<artifactId>sctp-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.protocols.sctp</groupId>
+			<artifactId>sctp-impl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.restcomm.protocols.ss7.m3ua</groupId>
+			<artifactId>m3ua-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.restcomm.protocols.ss7.m3ua</groupId>
+			<artifactId>m3ua-impl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.restcomm.protocols.ss7.mtp</groupId>
+			<artifactId>mtp-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.restcomm.protocols.ss7.mtp</groupId>
+			<artifactId>mtp</artifactId>
+		</dependency>
+
+
 
 	</dependencies>
 
@@ -51,8 +155,31 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+			<plugin>
+				<artifactId>maven-eclipse-plugin</artifactId>
+				<groupId>org.mobicents.tools</groupId>
+				<version>
+					${restcomm.tools.mavenplugin.eclipse.version}
+				</version>
+				<inherited>false</inherited>
+				<executions />
+				<configuration>
+					<classpathExcludes>
+						<exclude>xml-apis:xml-apis</exclude>
+						<exclude>jtidy:jtidy</exclude>
+					</classpathExcludes>
+					<resolveTransitiveDependencies>
+						true
+					</resolveTransitiveDependencies>
+					<eclipseProjectName>
+						tools
+					</eclipseProjectName>
+				</configuration>
+			</plugin>
+
 		</plugins>
 	</build>
+
 
 
 </project>

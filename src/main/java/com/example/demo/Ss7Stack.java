@@ -1,6 +1,6 @@
 package com.example.demo;
 
-import java.io.IOException;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
@@ -8,40 +8,40 @@ import org.mobicents.protocols.api.Association;
 import org.mobicents.protocols.api.IpChannelType;
 import org.mobicents.protocols.api.Management;
 import org.mobicents.protocols.sctp.netty.NettySctpManagementImpl;
-import org.mobicents.protocols.ss7.indicator.NatureOfAddress;
-import org.mobicents.protocols.ss7.indicator.RoutingIndicator;
-import org.mobicents.protocols.ss7.m3ua.As;
-import org.mobicents.protocols.ss7.m3ua.Asp;
-import org.mobicents.protocols.ss7.m3ua.AspFactory;
-import org.mobicents.protocols.ss7.m3ua.ExchangeType;
-import org.mobicents.protocols.ss7.m3ua.Functionality;
-import org.mobicents.protocols.ss7.m3ua.IPSPType;
-import org.mobicents.protocols.ss7.m3ua.impl.AsImpl;
-import org.mobicents.protocols.ss7.m3ua.impl.AspImpl;
-import org.mobicents.protocols.ss7.m3ua.impl.M3UAManagementImpl;
-import org.mobicents.protocols.ss7.m3ua.impl.fsm.FSM;
-import org.mobicents.protocols.ss7.m3ua.impl.parameter.ParameterFactoryImpl;
-import org.mobicents.protocols.ss7.m3ua.parameter.NetworkAppearance;
-import org.mobicents.protocols.ss7.m3ua.parameter.RoutingContext;
-import org.mobicents.protocols.ss7.m3ua.parameter.TrafficModeType;
-import org.mobicents.protocols.ss7.map.MAPStackImpl;
-import org.mobicents.protocols.ss7.map.api.MAPApplicationContext;
-import org.mobicents.protocols.ss7.map.api.MAPApplicationContextName;
-import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
-import org.mobicents.protocols.ss7.map.api.MAPException;
-import org.mobicents.protocols.ss7.map.api.MAPParameterFactory;
-import org.mobicents.protocols.ss7.map.api.MAPProvider;
-import org.mobicents.protocols.ss7.map.api.primitives.AddressNature;
-import org.mobicents.protocols.ss7.map.api.primitives.AddressString;
-import org.mobicents.protocols.ss7.map.api.primitives.ISDNAddressString;
-import org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan;
-import org.mobicents.protocols.ss7.map.api.service.sms.MAPDialogSms;
-import org.mobicents.protocols.ss7.mtp.RoutingLabelFormat;
-import org.mobicents.protocols.ss7.sccp.impl.SccpStackImpl;
-import org.mobicents.protocols.ss7.sccp.parameter.GlobalTitle;
-import org.mobicents.protocols.ss7.sccp.parameter.ParameterFactory;
-import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
-import org.mobicents.protocols.ss7.tcap.TCAPStackImpl;
+import org.restcomm.protocols.ss7.indicator.NatureOfAddress;
+import org.restcomm.protocols.ss7.indicator.RoutingIndicator;
+import org.restcomm.protocols.ss7.m3ua.As;
+import org.restcomm.protocols.ss7.m3ua.Asp;
+import org.restcomm.protocols.ss7.m3ua.AspFactory;
+import org.restcomm.protocols.ss7.m3ua.ExchangeType;
+import org.restcomm.protocols.ss7.m3ua.Functionality;
+import org.restcomm.protocols.ss7.m3ua.IPSPType;
+import org.restcomm.protocols.ss7.m3ua.impl.AsImpl;
+import org.restcomm.protocols.ss7.m3ua.impl.AspImpl;
+import org.restcomm.protocols.ss7.m3ua.impl.M3UAManagementImpl;
+import org.restcomm.protocols.ss7.m3ua.impl.fsm.FSM;
+import org.restcomm.protocols.ss7.m3ua.impl.parameter.ParameterFactoryImpl;
+import org.restcomm.protocols.ss7.m3ua.parameter.NetworkAppearance;
+import org.restcomm.protocols.ss7.m3ua.parameter.RoutingContext;
+import org.restcomm.protocols.ss7.m3ua.parameter.TrafficModeType;
+import org.restcomm.protocols.ss7.map.MAPStackImpl;
+import org.restcomm.protocols.ss7.map.api.MAPApplicationContext;
+import org.restcomm.protocols.ss7.map.api.MAPApplicationContextName;
+import org.restcomm.protocols.ss7.map.api.MAPApplicationContextVersion;
+import org.restcomm.protocols.ss7.map.api.MAPException;
+import org.restcomm.protocols.ss7.map.api.MAPParameterFactory;
+import org.restcomm.protocols.ss7.map.api.MAPProvider;
+import org.restcomm.protocols.ss7.map.api.primitives.AddressNature;
+import org.restcomm.protocols.ss7.map.api.primitives.AddressString;
+import org.restcomm.protocols.ss7.map.api.primitives.ISDNAddressString;
+import org.restcomm.protocols.ss7.map.api.primitives.NumberingPlan;
+import org.restcomm.protocols.ss7.map.api.service.sms.MAPDialogSms;
+import org.restcomm.protocols.ss7.mtp.RoutingLabelFormat;
+import org.restcomm.protocols.ss7.sccp.impl.SccpStackImpl;
+import org.restcomm.protocols.ss7.sccp.parameter.GlobalTitle;
+import org.restcomm.protocols.ss7.sccp.parameter.ParameterFactory;
+import org.restcomm.protocols.ss7.sccp.parameter.SccpAddress;
+import org.restcomm.protocols.ss7.tcap.TCAPStackImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -49,12 +49,12 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class Ss7Stack {
-	private Logger LOGGER = LoggerFactory.getLogger(Ss7Stack.class);
+    private Logger LOGGER = LoggerFactory.getLogger(Ss7Stack.class);
 
-	@Value("${ss7.persistFolder}")
-	private String persistFolder;
+    @Value("${ss7.persistFolder}")
+    private String persistFolder;
 
-	public Management sctpManagement;
+    public Management sctpManagement;
 
     public M3UAManagementImpl m3uaMgmt;
 
@@ -71,35 +71,35 @@ public class Ss7Stack {
 
 
 
-	public SccpStackImpl sccpStack;
+    public SccpStackImpl sccpStack;
 
-	public TCAPStackImpl tcapStack;
+    public TCAPStackImpl tcapStack;
 
-	public MAPStackImpl mapStack;
+    public MAPStackImpl mapStack;
 
     @PostConstruct
     public void init() {
         LOGGER.info("Init Ss7Stack");
 
         try {
-			initM3ua("10.0.0.6", 2064, "192.168.212.7", 2064, "10.0.0.6", 2066, "192.168.213.7", 2066, IpChannelType.SCTP, null, persistFolder, 2, RoutingLabelFormat.ITU);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+            initM3ua("10.0.0.6", 2064, "192.168.212.7", 2064, "10.0.0.6", 2066, "192.168.213.7", 2066, IpChannelType.SCTP, null, persistFolder, 2, RoutingLabelFormat.ITU);
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 
 /*
         sccpStack = new SccpStackImpl("SccpStack");
-		sccpStack.setPersistDir(persistFolder);
-		sccpStack.setMtp3UserPart(1, m3uaMgmt);
+        sccpStack.setPersistDir(persistFolder);
+        sccpStack.setMtp3UserPart(1, m3uaMgmt);
 
         int SSN = 0;
-		tcapStack = new TCAPStackImpl("TCAP", sccpStack.getSccpProvider(), SSN);
-		tcapStack.setPersistDir(persistFolder);
+        tcapStack = new TCAPStackImpl("TCAP", sccpStack.getSccpProvider(), SSN);
+        tcapStack.setPersistDir(persistFolder);
 
         mapStack = new MAPStackImpl("MapClient", tcapStack.getProvider());
         MAPProvider mapProvider = mapStack.getMAPProvider();
-		mapProvider.addMAPDialogListener(new MapDialogHandler());
+        mapProvider.addMAPDialogListener(new MapDialogHandler());
         mapProvider.getMAPServiceSupplementary().addMAPServiceListener(new MapSupplementaryHandler());
         mapProvider.getMAPServiceSms().addMAPServiceListener(new MapSMSHandler());
         mapProvider.getMAPServiceSupplementary().acivate();
@@ -111,87 +111,61 @@ public class Ss7Stack {
 
         StringBuilder sb = new StringBuilder();
         sb.append("SCTP: ");
-        sctpManagement.getAssociations().forEach(
-            (name,assoc) -> {
-                sb.append("[");
-                sb.append(name);
-                sb.append(" : ");
-                sb.append(assoc.isConnected() ? "Connected" : "Disconnected");
-                sb.append("] ");
-            } );
+        Map<String, Association> assocs = sctpManagement.getAssociations();
+        for (String name: assocs.keySet() ) {
+            sb.append("[");
+            sb.append(name);
+            sb.append(" : ");
+            sb.append(assocs.get(name).isConnected() ? "Connected" : "Disconnected");
+            sb.append("] ");
+        }
         sb.append("  M3UA:");
 
-        m3uaMgmt.getAppServers().forEach(
-            as -> {
-                sb.append(" AS: ");
-                sb.append(as.getName());
-                AsImpl asImpl = (AsImpl) as;
-                FSM lFsm = asImpl.getLocalFSM();
-                if (lFsm != null) {
-                    sb.append(" localFsm:");
-                    sb.append(lFsm.getState().toString());
-                }
-                FSM pFsm = asImpl.getPeerFSM();
-                if (pFsm != null) {
-                    sb.append(" peerFsm:");
-                    sb.append(pFsm.getState().toString());
-                }
-                as.getAspList().forEach(
-                    asp -> {
-                        sb.append(" ASP: ");
-                        sb.append(asp.getName());
-                        AspImpl aspImpl = (AspImpl) asp;
-                        FSM lFsmP = aspImpl.getLocalFSM();
-                        FSM pFsmP = aspImpl.getPeerFSM();
-                        if (lFsmP != null) {
-                            sb.append(" lFsmP:");
-                            sb.append(lFsmP.getState().toString());
-                        }
-                        if (pFsmP != null) {
-                            sb.append(" pFsmP:");
-                            sb.append(pFsmP.getState().toString());
-                        }
-                    }
-                );
+        for (As as: m3uaMgmt.getAppServers() ) {
+            sb.append(" AS: ");
+            sb.append(as.getName());
+            AsImpl asImpl = (AsImpl) as;
+            FSM lFsm = asImpl.getLocalFSM();
+            if (lFsm != null) {
+                sb.append(" localFsm:");
+                sb.append(lFsm.getState().toString());
             }
-        );
+            FSM pFsm = asImpl.getPeerFSM();
+            if (pFsm != null) {
+                sb.append(" peerFsm:");
+                sb.append(pFsm.getState().toString());
+            }
+            for (Asp asp : as.getAspList()) {
+                sb.append(" ASP: ");
+                sb.append(asp.getName());
+                AspImpl aspImpl = (AspImpl) asp;
+                FSM lFsmP = aspImpl.getLocalFSM();
+                FSM pFsmP = aspImpl.getPeerFSM();
+                if (lFsmP != null) {
+                    sb.append(" lFsmP:");
+                    sb.append(lFsmP.getState().toString());
+                }
+                if (pFsmP != null) {
+                    sb.append(" pFsmP:");
+                    sb.append(pFsmP.getState().toString());
+                }
+            }
+        }
 
         return sb.toString();
     }
 
     public void aspStart() {
         LOGGER.info("Ss7Stack aspStart");
-
-        m3uaMgmt.getAppServers().forEach(
-            as -> {
-                as.getAspList().forEach(
-                    asp -> {
-                        String name = asp.getName();
-                        LOGGER.info("Ss7Stack starting ASP: {}", name);
-
-                        try {
-							m3uaMgmt.startAsp(name);
-						} catch (Exception e) {
-                            LOGGER.info("Error starting Asp: {}", name);
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-                    }
-                );
-            }
-        );
-        LOGGER.info("Ss7Stack aspStart done");
-
     }
 
 
-    public void stop()
-    {
+    public void stop() {
         mapStack.stop();
         tcapStack.stop();
         sccpStack.stop();
         try {
-			m3uaMgmt.stop();
+            m3uaMgmt.stop();
             sctpManagement.stop();
         } catch (Exception e) {
             // TODO Auto-generated catch block
@@ -199,11 +173,10 @@ public class Ss7Stack {
         }
     }
 
-    public void start()
-    {
+    public void start() {
         LOGGER.info("Ss7Stack start");
         try {
-			sctpManagement.start();
+            sctpManagement.start();
             sctpManagement.setConnectDelay(10000);
             m3uaMgmt.start();
             sccpStack.start();
@@ -243,19 +216,19 @@ public class Ss7Stack {
 
         /*------------
         ParameterFactoryImpl factory = new ParameterFactoryImpl();
-		RoutingContext rc = factory.createRoutingContext(new long[] { 100l });
-		TrafficModeType trafficModeType = factory.createTrafficModeType(TrafficModeType.Loadshare);
-		clientM3UAMgmt.createAs("AS1", Functionality.AS, ExchangeType.SE, IPSPType.CLIENT, rc, trafficModeType, 1, null);
+        RoutingContext rc = factory.createRoutingContext(new long[] { 100l });
+        TrafficModeType trafficModeType = factory.createTrafficModeType(TrafficModeType.Loadshare);
+        clientM3UAMgmt.createAs("AS1", Functionality.AS, ExchangeType.SE, IPSPType.CLIENT, rc, trafficModeType, 1, null);
 
-		// Step 2 : Create ASP
-		clientM3UAMgmt.createAspFactory("ASP1", CLIENT_ASSOCIATION_NAME);
+        // Step 2 : Create ASP
+        clientM3UAMgmt.createAspFactory("ASP1", CLIENT_ASSOCIATION_NAME);
 
-		// Step3 : Assign ASP to AS
-		Asp asp = clientM3UAMgmt.assignAspToAs("AS1", "ASP1");
+        // Step3 : Assign ASP to AS
+        Asp asp = clientM3UAMgmt.assignAspToAs("AS1", "ASP1");
 
         // Step 4: Add Route. Remote point code is 2
         int SERVER_SPC = 0;
-		clientM3UAMgmt.addRoute(SERVER_SPC, -1, -1, "AS1");
+        clientM3UAMgmt.addRoute(SERVER_SPC, -1, -1, "AS1");
 
         //-----------*/
 
@@ -341,7 +314,7 @@ public class Ss7Stack {
         Thread.sleep(1000); // waiting for freeing ip ports
 
         // init M3UA stack+
-        this.m3uaMgmt = new M3UAManagementImpl("SimM3uaServer_" + name, "pname");
+        this.m3uaMgmt = new M3UAManagementImpl("SimM3uaServer_" + name, null, null);
     //    this.m3uaMgmt.setPersistDir(persistDir);
         this.m3uaMgmt.setTransportManagement(this.sctpManagement);
         this.m3uaMgmt.setRoutingLabelFormat(routingLabelFormat);
@@ -455,7 +428,7 @@ public class Ss7Stack {
         ParameterFactory parameterFactory = this.sccpStack.getSccpProvider().getParameterFactory();
         GlobalTitle gt = parameterFactory.createGlobalTitle(address,
                                         0,
-                                        org.mobicents.protocols.ss7.indicator.NumberingPlan.ISDN_TELEPHONY,
+                                        org.restcomm.protocols.ss7.indicator.NumberingPlan.ISDN_TELEPHONY,
                                         null,
                                         NatureOfAddress.INTERNATIONAL);
         return parameterFactory.createSccpAddress(RoutingIndicator.ROUTING_BASED_ON_GLOBAL_TITLE, gt, 0, SSN);
