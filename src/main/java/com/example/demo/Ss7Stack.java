@@ -338,7 +338,7 @@ public class Ss7Stack {
         this.sctpManagement.start();
         this.sctpManagement.setConnectDelay(10000);
         this.sctpManagement.removeAllResourses();
-        Thread.sleep(500); // waiting for freeing ip ports
+        Thread.sleep(1000); // waiting for freeing ip ports
 
         // init M3UA stack+
         this.m3uaMgmt = new M3UAManagementImpl("SimM3uaServer_" + name, "pname");
@@ -361,31 +361,14 @@ public class Ss7Stack {
 
         // String localHost2, int localPort2, String remoteHost2, int remotePort2
 
-        // 1. Create SCTP Server
-        sctpManagement.addServer(SERVER_NAME, localHost, localPort, ipChannelType, extraHostAddresses);
+        // 1. Create SCTP Association
+        sctpManagement.addAssociation(localHost, localPort, remoteHost, remotePort, ASSOCIATION_NAME, ipChannelType, extraHostAddresses);
+        this.assoc = sctpManagement.getAssociation(ASSOCIATION_NAME);
+        assName = ASSOCIATION_NAME;
 
-        // 2. Create SCTP Server Association
-        sctpManagement.addServerAssociation(remoteHost, remotePort, SERVER_NAME, SERVER_ASSOCIATION_NAME, ipChannelType);
-        this.assoc = sctpManagement.getAssociation(SERVER_ASSOCIATION_NAME);
-        assName = SERVER_ASSOCIATION_NAME;
-
-        // 3. Start Server
-        sctpManagement.startServer(SERVER_NAME);
-
-        if (localHost2 != null && !localHost2.equals("") && remoteHost2 != null && !remoteHost2.equals("")) {
-            // a second link is defined
-
-            // 1. Create SCTP Server
-            sctpManagement.addServer(SERVER_NAME_2, localHost2, localPort2, ipChannelType, null);
-
-            // 2. Create SCTP Server Association
-            sctpManagement.addServerAssociation(remoteHost2, remotePort2, SERVER_NAME_2, SERVER_ASSOCIATION_NAME_2, ipChannelType);
-            this.assoc2 = sctpManagement.getAssociation(SERVER_ASSOCIATION_NAME_2);
-            assName2 = SERVER_ASSOCIATION_NAME_2;
-
-            // 3. Start Server
-            sctpManagement.startServer(SERVER_NAME_2);
-        }
+        sctpManagement.addAssociation(localHost2, localPort2, remoteHost2, remotePort2, ASSOCIATION_NAME_2, ipChannelType, null);
+        this.assoc2 = sctpManagement.getAssociation(ASSOCIATION_NAME_2);
+        assName2 = ASSOCIATION_NAME_2;
 
         // configure M3UA stack
         // 1. Create AS
